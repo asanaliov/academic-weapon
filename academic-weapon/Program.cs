@@ -1,8 +1,15 @@
+using academic_weapon.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+var connectionString = Environment.GetEnvironmentVariable("ACADEMIC_WEAPON_DB") 
+                       ?? throw new InvalidOperationException("Database connection string not set");
+
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

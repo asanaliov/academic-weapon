@@ -2,8 +2,8 @@
 
 public class Material
 {
-    public string Id { get; set; }
-    public string SubjectId { get; set; }
+    public int Id { get; set; }
+    public int SubjectId { get; set; }
     public string Title { get; set; }
     public string Type { get; set; }
     public string? Content { get; set; }
