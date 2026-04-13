@@ -1,0 +1,30 @@
+﻿@model List<academic_weapon.Models.Subject>
+
+@foreach (var subject in Model)
+{
+    <p>
+        ID: @subject.Id
+    </p>
+    <p>
+        Subject: @subject.Name
+    </p>
+    <p>
+        Credits: @subject.Credits
+    </p>
+    <p>
+        Semester: @subject.Semester
+    </p>
+    <p>
+        Completed: @subject.IsCompleted
+    </p>
+    <p>
+        Has Labs: @subject.HasLab
+    </p>
+    <p>
+        Confidence Level: @subject.ConfidenceLevel
+    </p>
+    <p>
+        Final Grade: @subject.FinalGrade
+    </p>
+    
+}

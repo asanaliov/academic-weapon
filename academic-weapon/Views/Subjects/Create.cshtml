@@ -1,0 +1,11 @@
+﻿@model academic_weapon.Models.Subject
+
+<form asp-action="Create" method="post">
+    <label asp-for="Name"></label><input asp-for="Name"/>
+    <label asp-for="Credits"></label><input asp-for="Credits"/>
+    <label asp-for="Semester"></label><input asp-for="Semester"/>
+    <label asp-for="HasLab"></label><input asp-for="HasLab"/>
+    <label asp-for="ConfidenceLevel"></label><input asp-for="ConfidenceLevel"/>
+    
+    <button type="submit">Create</button>
+</form>
