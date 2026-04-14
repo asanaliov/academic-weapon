@@ -30,5 +30,15 @@ public class SubjectsController : Controller
         _context.SaveChanges();
         return RedirectToAction("Index");
     }
+
+    public IActionResult Details(int id)
+    {
+        Subject? subject = _context.Subjects.Find(id);
+        if (subject == null)
+        {
+            return NotFound();
+        }
+        return View(subject);
+    }
     
 }
