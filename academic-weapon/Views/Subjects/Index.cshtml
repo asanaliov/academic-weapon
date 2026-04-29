@@ -11,7 +11,9 @@
     <p>Has Labs: @subject.HasLab</p>
     <p>Confidence Level: @subject.ConfidenceLevel</p>
     <p>Final Grade: @subject.FinalGrade</p>
-    
-    <a asp-action="Details" asp-route-id="@subject.Id">View details</a>
-       
+
+    <a asp-action="Details" asp-route-id="@subject.Id">View details</a> 
+    <a asp-action="Edit" asp-route-id="@subject.Id">Edit</a> 
+    <a asp-action="Delete" asp-route-id="@subject.Id">Delete</a>
+    <hr />
 }

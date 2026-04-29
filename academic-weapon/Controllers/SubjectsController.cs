@@ -40,5 +40,45 @@ public class SubjectsController : Controller
         }
         return View(subject);
     }
+
+    public IActionResult Edit(int id)
+    {
+        Subject? subject = _context.Subjects.Find(id);
+        if (subject == null)
+        {
+            return NotFound();
+        }
+        return View(subject);
+    }
+
+    [HttpPost]
+    public IActionResult Edit(Subject subject)
+    {
+        _context.Subjects.Update(subject);
+        _context.SaveChanges();
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult Delete(int id)
+    {
+        Subject? subject = _context.Subjects.Find(id);
+        if (subject == null)
+        {
+            return NotFound();
+        }
+        return View(subject);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        Subject? subject = _context.Subjects.Find(id);
+        if (subject != null)
+        {
+            _context.Subjects.Remove(subject);
+            _context.SaveChanges();
+        }
+        return RedirectToAction("Index");
+    }
     
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("academic-weapon")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+597b086502d8e340823ecc52e87356700876fe4a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5710252ac1b8b165436eeb3f7bd20c7840c872d9")]
 [assembly: System.Reflection.AssemblyProductAttribute("academic-weapon")]
 [assembly: System.Reflection.AssemblyTitleAttribute("academic-weapon")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
