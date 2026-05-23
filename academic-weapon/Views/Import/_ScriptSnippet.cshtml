@@ -1,0 +1,50 @@
+@(new Microsoft.AspNetCore.Html.HtmlString(@"(function () {
+  const courses = [];
+
+  // ── Strategy 1: table rows ───────────────────────────────
+  document.querySelectorAll('table').forEach(table => {
+    const headers = [...table.querySelectorAll('th')].map(h =>
+      h.textContent.trim().toLowerCase());
+    const nameIdx    = headers.findIndex(h => /name|naziv|предмет|course/.test(h));
+    const creditIdx  = headers.findIndex(h => /credit|ects|кредит/.test(h));
+    const semIdx     = headers.findIndex(h => /sem/.test(h));
+    const labIdx     = headers.findIndex(h => /lab/.test(h));
+
+    table.querySelectorAll('tbody tr').forEach(row => {
+      const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim());
+      if (!cells.length) return;
+      const name = nameIdx >= 0 ? cells[nameIdx] : cells[0];
+      if (!name || name.length < 3) return;
+      courses.push({
+        name:    name,
+        credits: creditIdx >= 0 ? parseInt(cells[creditIdx]) || 0 : 0,
+        semester: semIdx >= 0   ? parseInt(cells[semIdx])    || 1 : 1,
+        hasLab:  labIdx >= 0   ? /yes|да|true|1/i.test(cells[labIdx]) : false,
+      });
+    });
+  });
+
+  // ── Strategy 2: list items if no table found ─────────────
+  if (!courses.length) {
+    document.querySelectorAll('li, .course, .subject, .predmet').forEach(el => {
+      const txt = el.textContent.trim();
+      if (txt.length > 5 && txt.length < 120) {
+        const credits = (txt.match(/(\d+)\s*(ECTS|кредит)/i) || [])[1];
+        courses.push({ name: txt.split('\n')[0].trim(), credits: parseInt(credits) || 0, semester: 1, hasLab: false });
+      }
+    });
+  }
+
+  if (!courses.length) {
+    console.warn('No courses found. The page structure may differ — share the page URL or HTML with Academic Weapon.');
+    return;
+  }
+
+  const json = JSON.stringify(courses, null, 2);
+  console.log('%cFound ' + courses.length + ' courses. Copy the JSON below:', 'color:#c9a84c;font-weight:bold');
+  console.log(json);
+  navigator.clipboard.writeText(json).then(
+    () => console.log('%cJSON copied to clipboard!', 'color:#5a9e6f;font-weight:bold'),
+    () => console.log('Could not auto-copy — select and copy the JSON above manually.')
+  );
+})();"))

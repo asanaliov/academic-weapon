@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "Import Courses";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-1">Import from FINKI</h2>
+        <p class="text-muted mb-4" style="font-size:0.88rem">
+            Enter your FINKI credentials — they are only used for this request and never stored.
+        </p>
+
+        @if (TempData["Error"] is string err)
+        {
+            <div class="alert mb-3 py-2" style="background:rgba(192,80,77,0.15);border:1px solid var(--danger);color:var(--text);border-radius:8px;font-size:0.88rem">
+                @err
+            </div>
+        }
+
+        @if (TempData["ImportResult"] is string ok)
+        {
+            <div class="alert mb-3 py-2" style="background:rgba(90,158,111,0.15);border:1px solid var(--success);color:var(--text);border-radius:8px;font-size:0.88rem">
+                @ok
+            </div>
+        }
+
+        <!-- Automated -->
+        <div class="card mb-4">
+            <div class="card-header">Automated Import</div>
+            <div class="card-body">
+                <form asp-action="Finki" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">FINKI Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="e.g. student123" autocomplete="username"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" autocomplete="current-password"/>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Courses Page URL</label>
+                        <input type="url" name="coursesUrl" class="form-control"
+                               value="https://courses.finki.ukim.mk/my/"
+                               placeholder="https://courses.finki.ukim.mk/my/"/>
+                        <div class="text-muted mt-1" style="font-size:0.75rem">
+                            Paste the URL of the page showing your enrolled courses. If unsure, log in first, navigate to your courses, then copy the URL from the address bar.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Import Courses</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manual fallback -->
+        <details>
+            <summary class="text-muted" style="cursor:pointer;font-size:0.85rem;margin-bottom:0.75rem">Manual import (paste JSON)</summary>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-muted small mb-2">
+                        Run the browser script while logged in and paste the output here.
+                    </p>
+                    <form asp-action="Manual" method="post">
+                        <div class="mb-3">
+                            <textarea name="json" class="form-control" rows="6"
+                                      placeholder='[{"name":"Calculus II","credits":6,"semester":2,"hasLab":false}]'
+                                      style="font-family:monospace;font-size:0.8rem"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Import JSON</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+
+        @if (TempData["DebugHtml"] is string debug)
+        {
+            <details class="mt-3">
+                <summary class="text-muted" style="cursor:pointer;font-size:0.8rem">Debug — page HTML snippet</summary>
+                <pre style="font-size:0.72rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;max-height:300px;color:var(--muted)">@debug</pre>
+            </details>
+        }
+    </div>
+</div>

@@ -11,7 +11,7 @@ using academic_weapon.Data;
 namespace academic_weapon.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260523115720_InitialCreate")]
+    [Migration("20260523121749_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

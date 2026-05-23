@@ -1,4 +1,5 @@
 using academic_weapon.Data;
+using academic_weapon.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? "Data Source=academic_weapon.db";
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
+builder.Services.AddScoped<FinkiImportService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
