@@ -1,8 +1,137 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model academic_weapon.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var now = DateTime.UtcNow;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Dashboard</h2>
+    <a asp-controller="Subjects" asp-action="Create" class="btn btn-primary btn-sm">+ Add Subject</a>
 </div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Weighted GPA</div>
+            <div class="stat-value">@(Model.WeightedGpa.HasValue ? $"{Model.WeightedGpa.Value:F1}%" : "—")</div>
+            <div class="stat-sub">avg of completed subjects</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Credits</div>
+            <div class="stat-value">@Model.CompletedCredits<span style="font-size:1.1rem;color:var(--muted)">/@Model.TotalCredits</span></div>
+            <div class="stat-sub">completed / total</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Subjects</div>
+            <div class="stat-value">@Model.Subjects.Count</div>
+            <div class="stat-sub">@Model.Subjects.Count(s => s.IsCompleted) done &middot; @Model.Subjects.Count(s => !s.IsCompleted) active</div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming -->
+@if (Model.UpcomingDeadlines.Any() || Model.UpcomingSessions.Any())
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Upcoming Deadlines</div>
+                <div class="card-body">
+                    @if (!Model.UpcomingDeadlines.Any())
+                    {
+                        <p class="text-muted small mb-0">No upcoming deadlines.</p>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.UpcomingDeadlines)
+                        {
+                            var daysLeft = (item.Assignment.DueDate.Date - now.Date).Days;
+                            var cls = daysLeft < 0 ? "overdue" : daysLeft <= 2 ? "due-soon" : "";
+                            <div class="deadline-row">
+                                <div>
+                                    <div class="fw-medium" style="font-size:0.9rem">@item.Assignment.Title</div>
+                                    <div class="text-muted" style="font-size:0.78rem">@item.SubjectName &middot; <span class="badge bg-secondary">@item.Assignment.Type</span></div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="@cls" style="font-size:0.82rem">
+                                        @(daysLeft < 0 ? $"{-daysLeft}d overdue" : daysLeft == 0 ? "Today" : daysLeft == 1 ? "Tomorrow" : $"in {daysLeft}d")
+                                    </div>
+                                    <div class="text-muted" style="font-size:0.75rem">@item.Assignment.DueDate.ToString("MMM d")</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Upcoming Study Sessions</div>
+                <div class="card-body">
+                    @if (!Model.UpcomingSessions.Any())
+                    {
+                        <p class="text-muted small mb-0">No sessions scheduled.</p>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.UpcomingSessions)
+                        {
+                            var daysLeft = (item.Session.PlannedDate.Date - now.Date).Days;
+                            <div class="session-row">
+                                <div>
+                                    <div class="fw-medium" style="font-size:0.9rem">@item.SubjectName</div>
+                                    <div class="text-muted" style="font-size:0.78rem">@item.Session.DurationMinutes min</div>
+                                </div>
+                                <div class="text-end" style="font-size:0.82rem">
+                                    @(daysLeft == 0 ? "Today" : daysLeft == 1 ? "Tomorrow" : $"in {daysLeft}d")
+                                    <div class="text-muted" style="font-size:0.75rem">@item.Session.PlannedDate.ToString("MMM d")</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Subjects -->
+@if (!Model.Subjects.Any())
+{
+    <div class="text-center py-5">
+        <p class="text-muted fs-5">No subjects yet.</p>
+        <a asp-controller="Subjects" asp-action="Create" class="btn btn-primary">Add your first subject</a>
+    </div>
+}
+else
+{
+    @foreach (var semester in Model.Subjects.GroupBy(s => s.Semester).OrderBy(g => g.Key))
+    {
+        <div class="section-title mt-3">Semester @semester.Key</div>
+        @foreach (var s in semester)
+        {
+            <a asp-controller="Subjects" asp-action="Details" asp-route-id="@s.Id"
+               class="subject-row @(s.IsCompleted ? "completed" : "")">
+                <div>
+                    <div class="subject-name">
+                        @s.Name
+                        @if (s.HasLab) { <span class="badge bg-secondary ms-1">Lab</span> }
+                        @if (s.IsCompleted) { <span class="badge bg-success ms-1">Done</span> }
+                    </div>
+                    <div class="subject-meta">@s.Credits cr &middot; Confidence @s.ConfidenceLevel/10</div>
+                </div>
+                @if (s.FinalGrade.HasValue)
+                {
+                    <span style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--accent)">
+                        @s.FinalGrade.Value.ToString("F1")%
+                    </span>
+                }
+            </a>
+        }
+    }
+}

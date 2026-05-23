@@ -1,11 +1,47 @@
-﻿@model academic_weapon.Models.Subject
+@model academic_weapon.Models.Subject
+@{
+    ViewData["Title"] = "Add Subject";
+}
 
-<form asp-action="Create" method="post">
-    <label asp-for="Name"></label><input asp-for="Name"/>
-    <label asp-for="Credits"></label><input asp-for="Credits"/>
-    <label asp-for="Semester"></label><input asp-for="Semester"/>
-    <label asp-for="HasLab"></label><input asp-for="HasLab"/>
-    <label asp-for="ConfidenceLevel"></label><input asp-for="ConfidenceLevel"/>
-    
-    <button type="submit">Create</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <h2 class="mb-4">Add Subject</h2>
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. Calculus II"/>
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <label asp-for="Credits" class="form-label"></label>
+                    <input asp-for="Credits" class="form-control" type="number" min="0" max="12"/>
+                </div>
+                <div class="col">
+                    <label asp-for="Semester" class="form-label"></label>
+                    <input asp-for="Semester" class="form-control" type="number" min="1" max="12"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ConfidenceLevel" class="form-label">Confidence (0–10)</label>
+                <input asp-for="ConfidenceLevel" class="form-control" type="number" min="0" max="10"/>
+            </div>
+            <div class="mb-3 form-check">
+                <input asp-for="HasLab" class="form-check-input" type="checkbox"/>
+                <label asp-for="HasLab" class="form-check-label">Has Lab</label>
+            </div>
+            <div class="mb-4 form-check">
+                <input asp-for="IsCompleted" class="form-check-input" type="checkbox"/>
+                <label asp-for="IsCompleted" class="form-check-label">Already Completed</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Add Subject</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
