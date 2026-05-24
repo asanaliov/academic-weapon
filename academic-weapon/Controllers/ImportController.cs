@@ -30,7 +30,7 @@ public class ImportController : Controller
         }
 
         coursesUrl = string.IsNullOrWhiteSpace(coursesUrl)
-            ? "https://courses.finki.ukim.mk/my/"
+            ? "https://courses.finki.ukim.mk/"
             : coursesUrl.Trim();
 
         var result = await _finki.ImportAsync(username, password, coursesUrl);

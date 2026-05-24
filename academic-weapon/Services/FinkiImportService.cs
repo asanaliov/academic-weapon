@@ -37,10 +37,18 @@ public class FinkiImportService
             var initialHtml = await initial.Content.ReadAsStringAsync();
             var currentUrl = initial.RequestMessage?.RequestUri?.ToString() ?? coursesUrl;
 
-            // If we're already on the courses page (no CAS redirect), skip login
+            // Moodle frontpage is guest-accessible — detect this via userId:0 and
+            // navigate to /login/index.php which triggers the CAS redirect.
+            if (Regex.IsMatch(initialHtml, @"""userId""\s*:\s*0\b"))
+            {
+                var loginPageUrl = BuildAbsoluteUrl(currentUrl, "/login/index.php");
+                initial = await client.GetAsync(loginPageUrl);
+                initialHtml = await initial.Content.ReadAsStringAsync();
+                currentUrl = initial.RequestMessage?.RequestUri?.ToString() ?? loginPageUrl;
+            }
+
             bool onLoginPage = currentUrl.Contains("login") || currentUrl.Contains("cas") ||
-                               initialHtml.Contains("cas") || initialHtml.Contains("password") &&
-                               initialHtml.Contains("username");
+                               (initialHtml.Contains("password") && initialHtml.Contains("username"));
 
             if (onLoginPage)
             {
@@ -66,7 +74,7 @@ public class FinkiImportService
 
                     if (string.IsNullOrEmpty(inputName)) continue;
 
-                    if (inputType == "hidden")
+                    if (inputType == "hidden" || inputType == "submit")
                         fields[inputName] = inputValue;
                     else if (inputType == "text" || inputName.Contains("user") || inputName.Contains("email"))
                         fields[inputName] = username;
