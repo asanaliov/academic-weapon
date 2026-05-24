@@ -117,23 +117,73 @@ public class FinkiImportService
 
         var courses = new List<ImportedCourse>();
 
-        // Strategy 1: FINKI Moodle — course links where the full name is in the title attribute
-        // e.g. <a title="Агентно-базирани системи-2025/2026/L" href=".../course/view.php?id=123">Ас-2025/2026/L-48</a>
-        var finkiLinks = doc.DocumentNode
-            .SelectNodes("//a[@href and contains(@href,'course/view.php') and @title]")
+        // Strategy 0: FINKI Moodle frontpage — <div class="coursebox" data-courseid="...">
+        // containing <h3 class="coursename"><a href=".../course/view.php?id=...">Full Name</a></h3>
+        var courseBoxes = doc.DocumentNode
+            .SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' coursebox ') and @data-courseid]")
             ?? Enumerable.Empty<HtmlNode>();
 
-        foreach (var a in finkiLinks)
+        foreach (var box in courseBoxes)
         {
-            var raw = HtmlEntity.DeEntitize(a.GetAttributeValue("title", "").Trim());
-            if (string.IsNullOrWhiteSpace(raw)) continue;
+            var link = box.SelectSingleNode(".//h3[contains(@class,'coursename')]//a");
+            if (link == null) continue;
 
-            // Strip the "-YYYY/YYYY" or "-YYYY/YYYY/L" year suffix
-            var name = Regex.Replace(raw, @"-\d{4}/\d{4}(/\w+)?$", "").Trim();
-            if (name.Length < 3) continue;
-            if (courses.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) continue;
+            var fullName = HtmlEntity.DeEntitize(link.InnerText.Trim());
+            if (string.IsNullOrWhiteSpace(fullName)) continue;
 
-            courses.Add(new ImportedCourse { Name = name, Credits = 0, Semester = 1 });
+            var courseId = ParseInt(box.GetAttributeValue("data-courseid", "0"));
+            var courseUrl = link.GetAttributeValue("href", "");
+
+            var (cleanName, academicYear, semesterType) = ParseFinkiCourseName(fullName);
+            if (cleanName.Length < 2) continue;
+            if (courses.Any(c => c.CourseId == courseId || c.Name.Equals(cleanName, StringComparison.OrdinalIgnoreCase))) continue;
+
+            courses.Add(new ImportedCourse
+            {
+                Name = cleanName,
+                FullName = fullName,
+                CourseId = courseId,
+                CourseUrl = courseUrl,
+                AcademicYear = academicYear,
+                SemesterType = semesterType,
+                // Best-effort initial guess: Z (winter) → odd semester, L (summer) → even semester.
+                // User can adjust in the Subject edit form; SemesterType preserves the raw value.
+                Semester = semesterType.Equals("L", StringComparison.OrdinalIgnoreCase) ? 2 : 1,
+                Credits = 0,
+            });
+        }
+
+        // Strategy 1: FINKI Moodle navigation sidebar — links with title attribute holding full name
+        // e.g. <a title="Агентно-базирани системи-2025/2026/L" href=".../course/view.php?id=123">Ас-2025/2026/L-48</a>
+        if (!courses.Any())
+        {
+            var finkiLinks = doc.DocumentNode
+                .SelectNodes("//a[@href and contains(@href,'course/view.php') and @title]")
+                ?? Enumerable.Empty<HtmlNode>();
+
+            foreach (var a in finkiLinks)
+            {
+                var raw = HtmlEntity.DeEntitize(a.GetAttributeValue("title", "").Trim());
+                if (string.IsNullOrWhiteSpace(raw)) continue;
+
+                var (cleanName, academicYear, semesterType) = ParseFinkiCourseName(raw);
+                if (cleanName.Length < 3) continue;
+                if (courses.Any(c => c.Name.Equals(cleanName, StringComparison.OrdinalIgnoreCase))) continue;
+
+                var courseId = ParseCourseIdFromUrl(a.GetAttributeValue("href", ""));
+
+                courses.Add(new ImportedCourse
+                {
+                    Name = cleanName,
+                    FullName = raw,
+                    CourseId = courseId,
+                    CourseUrl = a.GetAttributeValue("href", ""),
+                    AcademicYear = academicYear,
+                    SemesterType = semesterType,
+                    Semester = semesterType.Equals("L", StringComparison.OrdinalIgnoreCase) ? 2 : 1,
+                    Credits = 0,
+                });
+            }
         }
 
         // Strategy 2: Moodle course cards (standard Moodle dashboard structure)
@@ -233,6 +283,28 @@ public class FinkiImportService
             };
 
         return new FinkiImportResult { Success = true, Courses = courses, DebugHtmlSnippet = snippet };
+    }
+
+    // Splits "Агентно-базирани системи-2025/2026/L" into ("Агентно-базирани системи", "2025/2026", "L").
+    // Returns the original string with empty year/semester when no suffix is present
+    // (e.g. admin courses like "Консултации").
+    private static (string cleanName, string academicYear, string semesterType) ParseFinkiCourseName(string raw)
+    {
+        var trimmed = raw.Trim();
+        var match = Regex.Match(trimmed, @"^(?<name>.+?)\s*-\s*(?<year>\d{4}/\d{4})(?:/(?<sem>[A-Za-zЗзЛл]+))?\s*$");
+        if (!match.Success)
+            return (trimmed, "", "");
+
+        var name = match.Groups["name"].Value.Trim();
+        var year = match.Groups["year"].Value;
+        var sem = match.Groups["sem"].Success ? match.Groups["sem"].Value.ToUpperInvariant() : "";
+        return (name, year, sem);
+    }
+
+    private static int ParseCourseIdFromUrl(string url)
+    {
+        var m = Regex.Match(url ?? "", @"[?&]id=(\d+)");
+        return m.Success ? ParseInt(m.Groups[1].Value) : 0;
     }
 
     private static int FindIndex(List<string> headers, params string[] keywords)

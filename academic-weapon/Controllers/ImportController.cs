@@ -76,18 +76,29 @@ public class ImportController : Controller
 
     private int SaveCourses(List<ImportedCourse> courses)
     {
-        var existing = _context.Subjects.Select(s => s.Name.ToLower()).ToHashSet();
+        var existingNames = _context.Subjects.Select(s => s.Name.ToLower()).ToHashSet();
+        var existingCourseIds = _context.Subjects
+            .Where(s => s.CourseId != null)
+            .Select(s => s.CourseId!.Value)
+            .ToHashSet();
+
         int added = 0;
         foreach (var c in courses.Where(c => !string.IsNullOrWhiteSpace(c.Name)))
         {
-            if (existing.Contains(c.Name.ToLower())) continue;
+            if (c.CourseId > 0 && existingCourseIds.Contains(c.CourseId)) continue;
+            if (existingNames.Contains(c.Name.ToLower())) continue;
+
             _context.Subjects.Add(new Subject
             {
                 Name = c.Name.Trim(),
                 Credits = c.Credits > 0 ? c.Credits : 3,
                 Semester = c.Semester > 0 ? c.Semester : 1,
                 HasLab = c.HasLab,
-                ConfidenceLevel = 5
+                ConfidenceLevel = 5,
+                CourseId = c.CourseId > 0 ? c.CourseId : null,
+                CourseUrl = string.IsNullOrWhiteSpace(c.CourseUrl) ? null : c.CourseUrl,
+                AcademicYear = string.IsNullOrWhiteSpace(c.AcademicYear) ? null : c.AcademicYear,
+                SemesterType = string.IsNullOrWhiteSpace(c.SemesterType) ? null : c.SemesterType,
             });
             added++;
         }

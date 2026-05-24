@@ -1,0 +1,34 @@
+# Build output
+bin/
+obj/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Rider / JetBrains
+.idea/
+
+# VS / dotnet
+*.user
+.vs/
+*.suo
+
+# Published output
+publish/
+out/
+
+# Logs
+*.log
+logs/
+
+# Environment & secrets
+.env
+appsettings.Local.json
+
+# Project docs (AI context)
+CLAUDE.md
+
+# Local scraping artifacts
+courses_code.html
