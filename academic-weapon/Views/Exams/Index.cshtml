@@ -1,0 +1,89 @@
+@model academic_weapon.ViewModels.ExamIndexViewModel
+@{
+    ViewData["Title"] = "Exam Autopsy";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Exam Autopsy</h2>
+        <p class="text-muted mb-0">Past exams shared by students — tagged by course, professor and year.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Upload an exam</a>
+</div>
+
+<form asp-action="Index" method="get" class="row g-2 mb-4">
+    <div class="col-md-4">
+        <select name="course" class="form-select" asp-items="@(new SelectList(Model.CourseOptions, Model.Course))">
+            <option value="">All courses</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="professor" class="form-select" asp-items="@(new SelectList(Model.ProfessorOptions, Model.Professor))">
+            <option value="">All professors</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="year" class="form-select" asp-items="@(new SelectList(Model.YearOptions, Model.Year))">
+            <option value="">All years</option>
+        </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+@if (!Model.Exams.Any())
+{
+    <div class="alert alert-secondary">No exams yet. Be the first to upload one!</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th>Course</th>
+                <th>Professor</th>
+                <th>Year</th>
+                <th>Type</th>
+                <th>Difficulty</th>
+                <th>Uploaded by</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.Exams)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.Exam.CourseName</strong>
+                        @if (!string.IsNullOrWhiteSpace(item.Exam.CourseCode))
+                        {
+                            <span class="text-muted small d-block">@item.Exam.CourseCode</span>
+                        }
+                    </td>
+                    <td>@item.Exam.Professor</td>
+                    <td>@item.Exam.Year</td>
+                    <td>@item.Exam.ExamType</td>
+                    <td>
+                        @if (item.AverageDifficulty.HasValue)
+                        {
+                            <span>@item.AverageDifficulty.Value.ToString("0.0") / 5</span>
+                            <span class="text-muted small">(@item.RatingCount)</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>@item.UploaderName</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@item.Exam.Id" class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

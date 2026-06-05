@@ -1,0 +1,66 @@
+@model academic_weapon.Models.Exam
+@{
+    ViewData["Title"] = "Edit Exam";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Edit exam</h2>
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="CourseName" class="form-label">Course</label>
+                <input asp-for="CourseName" class="form-control"/>
+                <span asp-validation-for="CourseName" class="text-danger small"></span>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <label asp-for="CourseCode" class="form-label">Course code (optional)</label>
+                    <input asp-for="CourseCode" class="form-control"/>
+                </div>
+                <div class="col">
+                    <label asp-for="Year" class="form-label"></label>
+                    <input asp-for="Year" class="form-control" type="number" min="2000" max="2100"/>
+                    <span asp-validation-for="Year" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <label asp-for="Professor" class="form-label"></label>
+                    <input asp-for="Professor" class="form-control"/>
+                    <span asp-validation-for="Professor" class="text-danger small"></span>
+                </div>
+                <div class="col">
+                    <label asp-for="ExamType" class="form-label">Exam type</label>
+                    <select asp-for="ExamType" class="form-select">
+                        <option>Midterm 1</option>
+                        <option>Midterm 2</option>
+                        <option>Final</option>
+                        <option>Makeup</option>
+                        <option>Quiz</option>
+                        <option>Lab</option>
+                    </select>
+                    <span asp-validation-for="ExamType" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Notes (optional)</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Replace file (optional)</label>
+                <input type="file" name="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                <span class="text-danger small">@Html.ValidationMessage("file")</span>
+                <div class="form-text">Current file: @Model.OriginalFileName</div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

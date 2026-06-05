@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "Dr7ibMFaU3g=",
+  "dgSpecHash": "cOVtFKdO5uE=",
   "success": true,
   "projectFilePath": "C:\\Users\\Asan\\RiderProjects\\academic-weapon\\academic-weapon\\academic-weapon.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Asan\\.nuget\\packages\\htmlagilitypack\\1.11.67\\htmlagilitypack.1.11.67.nupkg.sha512",
     "C:\\Users\\Asan\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\Asan\\.nuget\\packages\\microsoft.aspnetcore.identity.entityframeworkcore\\10.0.0\\microsoft.aspnetcore.identity.entityframeworkcore.10.0.0.nupkg.sha512",
     "C:\\Users\\Asan\\.nuget\\packages\\microsoft.build\\17.7.2\\microsoft.build.17.7.2.nupkg.sha512",
     "C:\\Users\\Asan\\.nuget\\packages\\microsoft.build.framework\\17.14.28\\microsoft.build.framework.17.14.28.nupkg.sha512",
     "C:\\Users\\Asan\\.nuget\\packages\\microsoft.build.tasks.core\\17.14.28\\microsoft.build.tasks.core.17.14.28.nupkg.sha512",

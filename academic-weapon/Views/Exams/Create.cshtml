@@ -1,0 +1,68 @@
+@model academic_weapon.Models.Exam
+@{
+    ViewData["Title"] = "Upload Exam";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Upload an exam</h2>
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            <div class="mb-3">
+                <label asp-for="CourseName" class="form-label">Course</label>
+                <input asp-for="CourseName" class="form-control" placeholder="e.g. Calculus II"/>
+                <span asp-validation-for="CourseName" class="text-danger small"></span>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <label asp-for="CourseCode" class="form-label">Course code (optional)</label>
+                    <input asp-for="CourseCode" class="form-control" placeholder="e.g. F18L3S081"/>
+                </div>
+                <div class="col">
+                    <label asp-for="Year" class="form-label"></label>
+                    <input asp-for="Year" class="form-control" type="number" min="2000" max="2100"/>
+                    <span asp-validation-for="Year" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <label asp-for="Professor" class="form-label"></label>
+                    <input asp-for="Professor" class="form-control" placeholder="e.g. Prof. Smilevski"/>
+                    <span asp-validation-for="Professor" class="text-danger small"></span>
+                </div>
+                <div class="col">
+                    <label asp-for="ExamType" class="form-label">Exam type</label>
+                    <select asp-for="ExamType" class="form-select">
+                        <option value="">Choose…</option>
+                        <option>Midterm 1</option>
+                        <option>Midterm 2</option>
+                        <option>Final</option>
+                        <option>Makeup</option>
+                        <option>Quiz</option>
+                        <option>Lab</option>
+                    </select>
+                    <span asp-validation-for="ExamType" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Notes (optional)</label>
+                <textarea asp-for="Description" class="form-control" rows="3"
+                          placeholder="Anything helpful — topics covered, difficulty notes…"></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Exam file (PDF, PNG, JPG — max 10 MB)</label>
+                <input type="file" name="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"/>
+                <span class="text-danger small">@Html.ValidationMessage("file")</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Upload</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
