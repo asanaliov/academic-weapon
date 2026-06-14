@@ -14,9 +14,30 @@ public class SubjectsController : Controller
         _context = context;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(string? q)
     {
-        return View(_context.Subjects.OrderBy(s => s.Semester).ThenBy(s => s.Name).ToList());
+        var subjects = _context.Subjects.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(q))
+            subjects = subjects.Where(s => s.Name.ToLower().Contains(q.Trim().ToLower()));
+
+        ViewBag.Query = q;
+        return View(subjects.OrderBy(s => s.Semester).ThenBy(s => s.Name).ToList());
+    }
+
+    // CSV export of all subjects with grades — opens directly in Excel/Sheets.
+    public IActionResult Export()
+    {
+        var subjects = _context.Subjects.OrderBy(s => s.Semester).ThenBy(s => s.Name).ToList();
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("Name,Semester,Credits,Completed,Final Grade %,FINKI Grade");
+        foreach (var s in subjects)
+        {
+            var grade = s.FinalGrade.HasValue ? s.FinalGrade.Value.ToString("F1") : "";
+            var finki = s.FinalGrade.HasValue ? Helpers.GradeHelper.ToFinkiGrade(s.FinalGrade.Value).ToString() : "";
+            sb.AppendLine($"\"{s.Name.Replace("\"", "\"\"")}\",{s.Semester},{s.Credits},{(s.IsCompleted ? "Yes" : "No")},{grade},{finki}");
+        }
+        return File(System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray(),
+            "text/csv", $"academic-weapon-{DateTime.Now:yyyy-MM-dd}.csv");
     }
 
     public IActionResult Create() => View();

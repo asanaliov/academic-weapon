@@ -3,36 +3,42 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <h2 class="mb-4">Create an account</h2>
-        <form asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-            <div class="mb-3">
-                <label asp-for="DisplayName" class="form-label"></label>
-                <input asp-for="DisplayName" class="form-control" placeholder="e.g. Asan A."/>
-                <span asp-validation-for="DisplayName" class="text-danger small"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" placeholder="you@students.finki.ukim.mk"/>
-                <span asp-validation-for="Email" class="text-danger small"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control"/>
-                <span asp-validation-for="Password" class="text-danger small"></span>
-            </div>
-            <div class="mb-4">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control"/>
-                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-                <button type="submit" class="btn btn-primary">Register</button>
-                <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="btn btn-link">Already have an account?</a>
-            </div>
-        </form>
+<div class="row justify-content-center reveal">
+    <div class="col-md-5 col-lg-4">
+        <div class="page-head text-center">
+            <div class="page-kicker">Join in</div>
+            <h1 class="page-title">Create an account</h1>
+            <p class="page-sub mx-auto">An account lets you upload and rate exams in the Exam Autopsy archive.</p>
+        </div>
+        <div class="panel">
+            <form asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                <div class="mb-3">
+                    <label asp-for="DisplayName" class="form-label"></label>
+                    <input asp-for="DisplayName" class="form-control" placeholder="e.g. Asan A." autofocus/>
+                    <span asp-validation-for="DisplayName" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="you@students.finki.ukim.mk"/>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control"/>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control"/>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+        </div>
+        <p class="text-center mt-3" style="font-size:0.82rem;color:var(--faint)">
+            Already have an account? <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">Log in</a>
+        </p>
     </div>
 </div>
 

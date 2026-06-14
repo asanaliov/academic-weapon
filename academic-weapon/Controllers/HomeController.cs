@@ -28,8 +28,27 @@ public class HomeController : Controller
             weightedGpa = completedWithGrade.Sum(s => s.FinalGrade!.Value * s.Credits) / totalCredits;
         }
 
+        var semesterSummaries = subjects
+            .GroupBy(s => s.Semester)
+            .OrderBy(g => g.Key)
+            .Select(g =>
+            {
+                var graded = g.Where(s => s.IsCompleted && s.FinalGrade.HasValue && s.Credits > 0).ToList();
+                return new SemesterSummary
+                {
+                    Semester = g.Key,
+                    Gpa = graded.Any()
+                        ? graded.Sum(s => s.FinalGrade!.Value * s.Credits) / graded.Sum(s => s.Credits)
+                        : null,
+                    CompletedCredits = g.Where(s => s.IsCompleted).Sum(s => s.Credits),
+                    TotalCredits = g.Sum(s => s.Credits),
+                    SubjectCount = g.Count(),
+                    CompletedCount = g.Count(s => s.IsCompleted),
+                };
+            })
+            .ToList();
+
         var now = DateTime.UtcNow;
-        var upcoming = now.AddDays(14);
 
         var deadlines = _context.Assignments
             .Where(a => !a.IsCompleted && a.DueDate >= now.AddDays(-1))
@@ -56,10 +75,57 @@ public class HomeController : Controller
             TotalCredits = subjects.Sum(s => s.Credits),
             CompletedCredits = subjects.Where(s => s.IsCompleted).Sum(s => s.Credits),
             UpcomingDeadlines = deadlines,
-            UpcomingSessions = sessions
+            UpcomingSessions = sessions,
+            SemesterSummaries = semesterSummaries,
         };
 
         return View(vm);
+    }
+
+    // Chronological view of every deadline and study session across all subjects.
+    public IActionResult Agenda()
+    {
+        var subjectMap = _context.Subjects.ToDictionary(s => s.Id, s => s.Name);
+        var since = DateTime.UtcNow.Date.AddDays(-30);
+
+        var items = new List<AgendaItem>();
+
+        items.AddRange(_context.Assignments
+            .Where(a => a.DueDate >= since)
+            .ToList()
+            .Where(a => subjectMap.ContainsKey(a.SubjectId))
+            .Select(a => new AgendaItem
+            {
+                Date = a.DueDate,
+                IsSession = false,
+                Id = a.Id,
+                SubjectId = a.SubjectId,
+                SubjectName = subjectMap[a.SubjectId],
+                Title = a.Title,
+                Detail = a.Type,
+                IsCompleted = a.IsCompleted,
+            }));
+
+        items.AddRange(_context.StudySessions
+            .Where(s => s.PlannedDate >= since)
+            .ToList()
+            .Where(s => subjectMap.ContainsKey(s.SubjectId))
+            .Select(s => new AgendaItem
+            {
+                Date = s.PlannedDate,
+                IsSession = true,
+                Id = s.Id,
+                SubjectId = s.SubjectId,
+                SubjectName = subjectMap[s.SubjectId],
+                Title = "Study session",
+                Detail = $"{s.DurationMinutes} min" + (string.IsNullOrWhiteSpace(s.Notes) ? "" : $" · {s.Notes}"),
+                IsCompleted = s.IsCompleted,
+            }));
+
+        return View(new AgendaViewModel
+        {
+            Items = items.OrderBy(i => i.Date).ThenBy(i => i.SubjectName).ToList()
+        });
     }
 
     public IActionResult Privacy() => View();

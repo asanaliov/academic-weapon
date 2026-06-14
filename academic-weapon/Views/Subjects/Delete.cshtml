@@ -3,25 +3,26 @@
     ViewData["Title"] = "Delete Subject";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <h2 class="mb-1">Delete Subject</h2>
-        <p class="text-muted mb-4" style="font-size:0.9rem">This removes the subject and all its grading components, notes, materials, assignments, and study sessions.</p>
+<div class="row justify-content-center reveal">
+    <div class="col-md-6 col-lg-5">
+        <div class="page-head">
+            <div class="page-kicker" style="color:var(--clay)">Irreversible</div>
+            <h1 class="page-title">Delete this subject?</h1>
+            <p class="page-sub">This removes the subject and all of its grading components, notes, materials, assignments, and study sessions.</p>
+        </div>
 
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-1">@Model.Name</h5>
-                <p class="text-muted mb-0" style="font-size:0.85rem">
-                    Semester @Model.Semester &middot; @Model.Credits credits
-                    @if (Model.HasLab) { <span class="badge bg-secondary ms-1">Lab</span> }
-                </p>
+        <div class="panel mb-4">
+            <div class="row-title mb-1">@Model.Name</div>
+            <div class="row-meta">
+                Semester @Model.Semester · @Model.Credits credits
+                @if (Model.HasLab) { <span class="tag ms-2">Lab</span> }
             </div>
         </div>
 
         <form asp-action="Delete" method="post">
             <input type="hidden" name="id" value="@Model.Id"/>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-danger">Delete permanently</button>
                 <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>

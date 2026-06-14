@@ -3,35 +3,48 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - Academic Weapon</title>
+    <title>@ViewData["Title"] · Academic Weapon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Schibsted+Grotesk:ital,wght@0,400..700;1,400..700&family=Spline+Sans+Mono:wght@300..600&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-expand-sm">
+@{
+    var currentController = (string?)ViewContext.RouteData.Values["controller"] ?? "";
+    var currentAction = (string?)ViewContext.RouteData.Values["action"] ?? "";
+    string Active(string controller, string? action = null) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+        (action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase))
+            ? "active" : "";
+}
+<header class="topbar">
+    <nav class="navbar navbar-expand-md">
         <div class="container">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">Academic Weapon</a>
+            <a class="navbar-brand brand" asp-controller="Home" asp-action="Index">
+                Academic Weapon<span class="tick">.</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-md-center">
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a>
+                        <a class="nav-link @(Active("Home", "Index"))" asp-controller="Home" asp-action="Index">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Subjects" asp-action="Index">Subjects</a>
+                        <a class="nav-link @(Active("Subjects"))" asp-controller="Subjects" asp-action="Index">Subjects</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Exams" asp-action="Index">Exam Autopsy</a>
+                        <a class="nav-link @(Active("Home", "Agenda"))" asp-controller="Home" asp-action="Agenda">Agenda</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Import" asp-action="Index">Import</a>
+                        <a class="nav-link @(Active("Exams"))" asp-controller="Exams" asp-action="Index">Exam Autopsy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(Active("Import"))" asp-controller="Import" asp-action="Index">Import</a>
                     </li>
                     <partial name="_LoginPartial"/>
                 </ul>
@@ -40,15 +53,28 @@
     </nav>
 </header>
 
-<div class="container py-4">
+<div class="container pb-5" style="flex:1">
+    @if (TempData["ImportResult"] is string flashOk)
+    {
+        <div class="flash flash-ok">@flashOk</div>
+    }
+    @if (TempData["Success"] is string flashSuccess)
+    {
+        <div class="flash flash-ok">@flashSuccess</div>
+    }
+    @if (TempData["Error"] is string flashErr)
+    {
+        <div class="flash flash-error">@flashErr</div>
+    }
     <main role="main">
         @RenderBody()
     </main>
 </div>
 
 <footer class="footer">
-    <div class="container py-2">
-        &copy; @DateTime.Now.Year &mdash; Academic Weapon
+    <div class="container d-flex justify-content-between">
+        <span>Academic Weapon — @DateTime.Now.Year</span>
+        <span>study hard · rest well</span>
     </div>
 </footer>
 

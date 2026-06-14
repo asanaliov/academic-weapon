@@ -25,7 +25,7 @@ public class AssignmentsController : Controller
     }
 
     [HttpPost]
-    public IActionResult ToggleComplete(int id, int subjectId)
+    public IActionResult ToggleComplete(int id, int subjectId, string? returnUrl)
     {
         var assignment = _context.Assignments.Find(id);
         if (assignment != null)
@@ -33,6 +33,8 @@ public class AssignmentsController : Controller
             assignment.IsCompleted = !assignment.IsCompleted;
             _context.SaveChanges();
         }
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
         return RedirectToAction("Details", "Subjects", new { id = subjectId });
     }
 

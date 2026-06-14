@@ -22,7 +22,7 @@ public class StudySessionsController : Controller
     }
 
     [HttpPost]
-    public IActionResult ToggleComplete(int id, int subjectId)
+    public IActionResult ToggleComplete(int id, int subjectId, string? returnUrl)
     {
         var session = _context.StudySessions.Find(id);
         if (session != null)
@@ -30,6 +30,8 @@ public class StudySessionsController : Controller
             session.IsCompleted = !session.IsCompleted;
             _context.SaveChanges();
         }
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
         return RedirectToAction("Details", "Subjects", new { id = subjectId });
     }
 

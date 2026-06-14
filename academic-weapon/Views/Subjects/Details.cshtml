@@ -1,3 +1,4 @@
+@using academic_weapon.Helpers
 @model academic_weapon.ViewModels.SubjectDetailsViewModel
 @{
     ViewData["Title"] = Model.Subject.Name;
@@ -5,57 +6,64 @@
     var now = DateTime.UtcNow;
 }
 
-<!-- Header -->
-<div class="d-flex justify-content-between align-items-start mb-1">
-    <div>
-        <h2 class="mb-1">
-            @s.Name
-            @if (s.HasLab)     { <span class="badge bg-secondary">Lab</span> }
-            @if (s.IsCompleted){ <span class="badge bg-success">Done</span>  }
-        </h2>
-        <p class="text-muted mb-0" style="font-size:0.85rem">
-            Semester @s.Semester &middot; @s.Credits credits &middot; Confidence @s.ConfidenceLevel/10
-            @if (s.FinalGrade.HasValue) { <span class="ms-2" style="color:var(--accent)">Final: @s.FinalGrade.Value.ToString("F1")%</span> }
-        </p>
-    </div>
-    <div class="d-flex gap-2 flex-shrink-0">
-        <a asp-action="Edit"   asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-        <a asp-action="Delete" asp-route-id="@s.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-        <a asp-action="Index"                       class="btn btn-sm btn-outline-secondary">Back</a>
-    </div>
-</div>
+<div class="reveal">
 
-<!-- Progress bar -->
-@if (Model.TotalWeight > 0)
-{
-    <div class="mb-4 mt-3">
-        <div class="d-flex justify-content-between mb-1" style="font-size:0.78rem;color:var(--muted)">
-            <span>Grade progress</span>
-            <span>
-                @if (Model.CalculatedGrade.HasValue)
+    <!-- Header -->
+    <div class="page-head d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div>
+            <div class="page-kicker">Semester @s.Semester · @s.Credits ECTS</div>
+            <h1 class="page-title">
+                @s.Name
+                @if (s.HasLab)      { <span class="tag ms-2" style="vertical-align:middle">Lab</span> }
+                @if (s.IsCompleted) { <span class="tag tag-sage ms-1" style="vertical-align:middle">Done</span> }
+            </h1>
+            <p class="page-sub">
+                Confidence @s.ConfidenceLevel/10
+                @if (s.FinalGrade.HasValue)
                 {
-                    <span style="color:var(--accent);font-weight:600">@Model.CalculatedGrade.Value.ToString("F1")%</span>
-                    <span class="ms-1">(@Model.WeightCovered.ToString("F0")% of grade covered)</span>
+                    <span class="ms-1" style="color:var(--brass)">· final @s.FinalGrade.Value.ToString("F1")% (grade @GradeHelper.ToFinkiGrade(s.FinalGrade.Value))</span>
                 }
-                else
+                @if (!string.IsNullOrEmpty(s.CourseUrl))
                 {
-                    <span>No scores entered yet</span>
+                    <a href="@s.CourseUrl" target="_blank" class="ms-1" style="font-size:0.8rem">· open in Moodle ↗</a>
                 }
-            </span>
+            </p>
         </div>
-        <div class="progress">
-            <div class="progress-bar" style="width:@Model.ProgressPercent.ToString("F0")%"></div>
+        <div class="d-flex gap-2 flex-shrink-0">
+            <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+            <a asp-action="Delete" asp-route-id="@s.Id" class="btn btn-sm btn-outline-danger">Delete</a>
         </div>
     </div>
-}
 
-<div class="row g-3">
+    <!-- Grade progress -->
+    @if (Model.TotalWeight > 0)
+    {
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1 mono" style="font-size:0.72rem;color:var(--faint)">
+                <span>grade progress — @Model.WeightCovered.ToString("F0")% of weight scored</span>
+                <span>
+                    @if (Model.CalculatedGrade.HasValue)
+                    {
+                        <span style="color:var(--brass);font-weight:600">currently @Model.CalculatedGrade.Value.ToString("F1")%</span>
+                    }
+                    else
+                    {
+                        <span>no scores yet</span>
+                    }
+                </span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" style="width:@Model.ProgressPercent.ToString("F0")%"></div>
+            </div>
+        </div>
+    }
 
-    <!-- Grading Components -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">Grading</div>
-            <div class="card-body">
+    <div class="row g-3">
+
+        <!-- Grading Components -->
+        <div class="col-lg-6">
+            <div class="panel h-100">
+                <div class="panel-label">Grading</div>
                 @if (Model.GradingComponents.Any())
                 {
                     <table class="table table-sm mb-3">
@@ -65,21 +73,21 @@
                             {
                                 <tr>
                                     <td>@c.Name</td>
-                                    <td class="text-end text-muted">@c.Weight%</td>
+                                    <td class="text-end text-muted mono" style="font-size:0.8rem">@c.Weight%</td>
                                     <td class="text-end">
                                         <form asp-controller="GradingComponents" asp-action="UpdateScore" method="post" class="d-inline">
                                             <input type="hidden" name="id" value="@c.Id"/>
                                             <input type="hidden" name="subjectId" value="@s.Id"/>
                                             <input type="number" name="score" value="@c.Score" step="0.1" min="0" max="100"
-                                                   class="form-control form-control-sm d-inline-block" style="width:72px"
+                                                   class="form-control form-control-sm d-inline-block" style="width:76px"
                                                    onchange="this.form.submit()" placeholder="—"/>
                                         </form>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" style="width:34px">
                                         <form asp-controller="GradingComponents" asp-action="Delete" method="post" class="d-inline">
                                             <input type="hidden" name="id" value="@c.Id"/>
                                             <input type="hidden" name="subjectId" value="@s.Id"/>
-                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">&times;</button>
+                                            <button type="submit" class="btn-tick x" title="Remove">&times;</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -89,51 +97,72 @@
                 }
                 else
                 {
-                    <p class="text-muted small">No components yet.</p>
+                    <p class="text-muted mb-3" style="font-size:0.84rem">Define how the grade is built — e.g. Midterm 40%, Final 60% — then enter scores as they come in.</p>
                 }
                 <form asp-controller="GradingComponents" asp-action="Create" method="post">
                     <input type="hidden" name="SubjectId" value="@s.Id"/>
                     <div class="input-group input-group-sm">
                         <input type="text" name="Name" class="form-control" placeholder="e.g. Midterm" required/>
-                        <input type="number" name="Weight" class="form-control" placeholder="%" step="0.1" min="0" max="100" required style="max-width:75px"/>
+                        <input type="number" name="Weight" class="form-control" placeholder="%" step="0.1" min="0" max="100" required style="max-width:78px"/>
                         <button type="submit" class="btn btn-outline-primary">Add</button>
                     </div>
                 </form>
+
+                @* What-do-I-need table *@
+                @if (!s.IsCompleted && Model.TotalWeight > 0 && Model.RemainingWeight > 0 && Model.WeightCovered > 0)
+                {
+                    <div class="panel-label mt-4">To finish with…</div>
+                    @foreach (var (grade, percent) in GradeHelper.Targets)
+                    {
+                        var needed = Model.NeededForTarget(percent);
+                        if (needed is null) { continue; }
+                        <div class="target-row">
+                            <span class="target-grade">@grade <span class="mono text-muted" style="font-size:0.68rem">(@percent%)</span></span>
+                            @if (needed <= 0)
+                            {
+                                <span class="target-need ok">already secured</span>
+                            }
+                            else if (needed > 100)
+                            {
+                                <span class="target-need gone">out of reach</span>
+                            }
+                            else
+                            {
+                                <span class="target-need push">avg @needed.Value.ToString("F0")% on the rest</span>
+                            }
+                        </div>
+                    }
+                }
             </div>
         </div>
-    </div>
 
-    <!-- Assignments -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">Assignments & Deadlines</div>
-            <div class="card-body">
+        <!-- Assignments -->
+        <div class="col-lg-6">
+            <div class="panel h-100">
+                <div class="panel-label">Assignments &amp; deadlines</div>
                 @if (Model.Assignments.Any())
                 {
                     @foreach (var a in Model.Assignments)
                     {
                         var daysLeft = (a.DueDate.Date - now.Date).Days;
                         var dueCls = a.IsCompleted ? "text-muted" : daysLeft < 0 ? "overdue" : daysLeft <= 2 ? "due-soon" : "";
-                        <div class="deadline-row" style="@(a.IsCompleted ? "opacity:0.5" : "")">
+                        <div class="deadline-row" style="@(a.IsCompleted ? "opacity:0.45" : "")">
                             <div>
-                                <div style="font-size:0.88rem;font-weight:@(a.IsCompleted ? "400" : "500");text-decoration:@(a.IsCompleted ? "line-through" : "none")">@a.Title</div>
-                                <div style="font-size:0.75rem;color:var(--muted)">
-                                    <span class="badge bg-secondary">@a.Type</span>
-                                    <span class="ms-1 @dueCls">@a.DueDate.ToString("MMM d")</span>
+                                <div class="row-title" style="text-decoration:@(a.IsCompleted ? "line-through" : "none")">@a.Title</div>
+                                <div class="row-meta">
+                                    @a.Type.ToLower() · <span class="@dueCls">@a.DueDate.ToString("MMM d")</span>
                                 </div>
                             </div>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1" style="flex-shrink:0">
                                 <form asp-controller="Assignments" asp-action="ToggleComplete" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@a.Id"/>
                                     <input type="hidden" name="subjectId" value="@s.Id"/>
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="@(a.IsCompleted ? "Undo" : "Done")">
-                                        @(a.IsCompleted ? "↩" : "✓")
-                                    </button>
+                                    <button type="submit" class="btn-tick" title="@(a.IsCompleted ? "Undo" : "Done")">@(a.IsCompleted ? "↩" : "✓")</button>
                                 </form>
                                 <form asp-controller="Assignments" asp-action="Delete" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@a.Id"/>
                                     <input type="hidden" name="subjectId" value="@s.Id"/>
-                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0 px-1">&times;</button>
+                                    <button type="submit" class="btn-tick x" title="Remove">&times;</button>
                                 </form>
                             </div>
                         </div>
@@ -141,9 +170,9 @@
                 }
                 else
                 {
-                    <p class="text-muted small">No assignments yet.</p>
+                    <p class="text-muted mb-3" style="font-size:0.84rem">Nothing due yet. Add homework, exams, or project deadlines.</p>
                 }
-                <form asp-controller="Assignments" asp-action="Create" method="post" class="mt-2">
+                <form asp-controller="Assignments" asp-action="Create" method="post" class="mt-3">
                     <input type="hidden" name="SubjectId" value="@s.Id"/>
                     <div class="mb-2">
                         <input type="text" name="Title" class="form-control form-control-sm" placeholder="Assignment title" required/>
@@ -162,31 +191,39 @@
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Materials -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">Materials</div>
-            <div class="card-body">
+        <!-- Materials -->
+        <div class="col-lg-6">
+            <div class="panel h-100">
+                <div class="panel-label">Materials</div>
                 @if (Model.Materials.Any())
                 {
-                    <div class="list-group list-group-flush mb-3">
+                    <div class="mb-3">
                         @foreach (var m in Model.Materials)
                         {
-                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <div class="deadline-row">
                                 <div>
-                                    <div style="font-size:0.88rem;font-weight:500">@m.Title</div>
-                                    <div style="font-size:0.75rem;color:var(--muted)">
-                                        <span class="badge bg-secondary">@m.Type</span>
-                                        @if (!string.IsNullOrEmpty(m.Content)) { <span class="ms-1">@m.Content</span> }
+                                    <div class="row-title">@m.Title</div>
+                                    <div class="row-meta">
+                                        @m.Type.ToLower()
+                                        @if (!string.IsNullOrEmpty(m.Content))
+                                        {
+                                            @if (Uri.IsWellFormedUriString(m.Content, UriKind.Absolute))
+                                            {
+                                                <a href="@m.Content" target="_blank" class="ms-1">open ↗</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="ms-1">· @m.Content</span>
+                                            }
+                                        }
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <form asp-controller="Materials" asp-action="UpdateConfidence" method="post" class="d-inline">
+                                <div class="d-flex align-items-center gap-2" style="flex-shrink:0">
+                                    <form asp-controller="Materials" asp-action="UpdateConfidence" method="post" class="d-inline" title="Confidence 0–10">
                                         <input type="hidden" name="id" value="@m.Id"/>
                                         <input type="hidden" name="subjectId" value="@s.Id"/>
-                                        <select name="confidence" class="form-select form-select-sm" style="width:65px" onchange="this.form.submit()">
+                                        <select name="confidence" class="form-select form-select-sm" style="width:64px" onchange="this.form.submit()">
                                             @for (int i = 0; i <= 10; i++)
                                             {
                                                 <option value="@i" selected="@(m.ConfidenceLevel == i)">@i</option>
@@ -196,7 +233,7 @@
                                     <form asp-controller="Materials" asp-action="Delete" method="post" class="d-inline">
                                         <input type="hidden" name="id" value="@m.Id"/>
                                         <input type="hidden" name="subjectId" value="@s.Id"/>
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0">&times;</button>
+                                        <button type="submit" class="btn-tick x" title="Remove">&times;</button>
                                     </form>
                                 </div>
                             </div>
@@ -205,15 +242,13 @@
                 }
                 else
                 {
-                    <p class="text-muted small">No materials yet.</p>
+                    <p class="text-muted mb-3" style="font-size:0.84rem">Track slides, books, and videos — and how confident you feel about each.</p>
                 }
                 <form asp-controller="Materials" asp-action="Create" method="post">
                     <input type="hidden" name="SubjectId" value="@s.Id"/>
-                    <div class="mb-2">
-                        <input type="text" name="Title" class="form-control form-control-sm" placeholder="Title" required/>
-                    </div>
                     <div class="input-group input-group-sm mb-2">
-                        <select name="Type" class="form-select form-select-sm">
+                        <input type="text" name="Title" class="form-control" placeholder="Title" required/>
+                        <select name="Type" class="form-select form-select-sm" style="max-width:100px">
                             <option>Note</option><option>Slides</option><option>Book</option><option>Video</option><option>Other</option>
                         </select>
                         <button type="submit" class="btn btn-outline-primary">Add</button>
@@ -222,37 +257,35 @@
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Study Sessions -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">Study Sessions</div>
-            <div class="card-body">
+        <!-- Study Sessions -->
+        <div class="col-lg-6">
+            <div class="panel h-100">
+                <div class="panel-label">Study sessions</div>
                 @if (Model.StudySessions.Any())
                 {
                     @foreach (var ss in Model.StudySessions)
                     {
-                        <div class="session-row" style="@(ss.IsCompleted ? "opacity:0.5" : "")">
+                        <div class="session-row" style="@(ss.IsCompleted ? "opacity:0.45" : "")">
                             <div>
-                                <div style="font-size:0.88rem;font-weight:@(ss.IsCompleted ? "400" : "500");text-decoration:@(ss.IsCompleted ? "line-through" : "none")">
-                                    @ss.PlannedDate.ToString("MMM d, yyyy")
+                                <div class="row-title" style="text-decoration:@(ss.IsCompleted ? "line-through" : "none")">
+                                    @ss.PlannedDate.ToString("ddd, MMM d")
                                 </div>
-                                <div style="font-size:0.75rem;color:var(--muted)">
+                                <div class="row-meta">
                                     @ss.DurationMinutes min
-                                    @if (!string.IsNullOrEmpty(ss.Notes)) { <span class="ms-1">&middot; @ss.Notes</span> }
+                                    @if (!string.IsNullOrEmpty(ss.Notes)) { <span> · @ss.Notes</span> }
                                 </div>
                             </div>
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1" style="flex-shrink:0">
                                 <form asp-controller="StudySessions" asp-action="ToggleComplete" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@ss.Id"/>
                                     <input type="hidden" name="subjectId" value="@s.Id"/>
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">@(ss.IsCompleted ? "↩" : "✓")</button>
+                                    <button type="submit" class="btn-tick" title="@(ss.IsCompleted ? "Undo" : "Done")">@(ss.IsCompleted ? "↩" : "✓")</button>
                                 </form>
                                 <form asp-controller="StudySessions" asp-action="Delete" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@ss.Id"/>
                                     <input type="hidden" name="subjectId" value="@s.Id"/>
-                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0 px-1">&times;</button>
+                                    <button type="submit" class="btn-tick x" title="Remove">&times;</button>
                                 </form>
                             </div>
                         </div>
@@ -260,54 +293,48 @@
                 }
                 else
                 {
-                    <p class="text-muted small">No sessions planned.</p>
+                    <p class="text-muted mb-3" style="font-size:0.84rem">Plan focused blocks of revision time for this subject.</p>
                 }
-                <form asp-controller="StudySessions" asp-action="Create" method="post" class="mt-2">
+                <form asp-controller="StudySessions" asp-action="Create" method="post" class="mt-3">
                     <input type="hidden" name="SubjectId" value="@s.Id"/>
                     <div class="input-group input-group-sm mb-2">
                         <input type="date" name="PlannedDate" class="form-control" required/>
-                        <input type="number" name="DurationMinutes" class="form-control" placeholder="min" min="15" max="480" style="max-width:80px" required/>
+                        <input type="number" name="DurationMinutes" class="form-control" placeholder="min" min="15" max="480" value="60" style="max-width:80px" required/>
                         <button type="submit" class="btn btn-outline-primary">Schedule</button>
                     </div>
-                    <input type="text" name="Notes" class="form-control form-control-sm" placeholder="Notes (optional)"/>
+                    <input type="text" name="Notes" class="form-control form-control-sm" placeholder="What will you cover? (optional)"/>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Notes -->
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">Notes</div>
-            <div class="card-body">
+        <!-- Notes -->
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-label">Notes</div>
                 @if (Model.Notes.Any())
                 {
                     @foreach (var note in Model.Notes)
                     {
                         <div class="note-block">
-                            <div class="note-date">@note.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · h:mm tt")</div>
+                            <div class="note-date">@note.CreatedAt.ToLocalTime().ToString("MMM d, yyyy · HH:mm")</div>
                             <div style="white-space:pre-wrap;font-size:0.9rem">@note.Content</div>
-                            <form asp-controller="Notes" asp-action="Delete" method="post" style="position:absolute;top:0.6rem;right:0.75rem">
+                            <form asp-controller="Notes" asp-action="Delete" method="post" style="position:absolute;top:0.7rem;right:0.8rem">
                                 <input type="hidden" name="id" value="@note.Id"/>
                                 <input type="hidden" name="subjectId" value="@s.Id"/>
-                                <button type="submit" class="btn btn-sm btn-link text-danger p-0">&times;</button>
+                                <button type="submit" class="btn-tick x" title="Delete note">&times;</button>
                             </form>
                         </div>
                     }
                 }
-                else
-                {
-                    <p class="text-muted small mb-3">No notes yet.</p>
-                }
                 <form asp-controller="Notes" asp-action="Create" method="post" class="mt-2">
                     <input type="hidden" name="SubjectId" value="@s.Id"/>
                     <div class="mb-2">
-                        <textarea name="Content" class="form-control" rows="3" placeholder="Write a note..."></textarea>
+                        <textarea name="Content" class="form-control" rows="3" placeholder="Write a note…"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Add Note</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Add note</button>
                 </form>
             </div>
         </div>
-    </div>
 
+    </div>
 </div>

@@ -4,84 +4,78 @@
     var isImage = Model.Exam.ContentType.StartsWith("image/");
 }
 
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h2 class="mb-1">@Model.Exam.CourseName <span class="text-muted">(@Model.Exam.Year)</span></h2>
-        <p class="text-muted mb-0">
-            @Model.Exam.Professor · @Model.Exam.ExamType
-            @if (!string.IsNullOrWhiteSpace(Model.Exam.CourseCode))
-            {
-                <span>· @Model.Exam.CourseCode</span>
-            }
-        </p>
-    </div>
-    @if (Model.CanManage)
-    {
-        <div class="d-flex gap-2">
-            <a asp-action="Edit" asp-route-id="@Model.Exam.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-            <a asp-action="Delete" asp-route-id="@Model.Exam.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-        </div>
-    }
-</div>
+<div class="reveal">
 
-<div class="row g-4">
-    <div class="col-md-7">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small mb-2">The exam</h6>
-                @if (isImage)
+    <div class="page-head d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div>
+            <div class="page-kicker">@Model.Exam.ExamType · @Model.Exam.Year</div>
+            <h1 class="page-title">@Model.Exam.CourseName</h1>
+            <p class="page-sub">
+                @Model.Exam.Professor
+                @if (!string.IsNullOrWhiteSpace(Model.Exam.CourseCode))
                 {
-                    <img src="@Model.Exam.FilePath" alt="Exam preview" class="img-fluid rounded mb-3"/>
+                    <span class="mono ms-1" style="font-size:0.78rem">· @Model.Exam.CourseCode</span>
                 }
-                <div class="d-flex gap-2">
-                    <a asp-action="Download" asp-route-id="@Model.Exam.Id" class="btn btn-primary">Download (@Model.Exam.OriginalFileName)</a>
-                    <a href="@Model.Exam.FilePath" target="_blank" class="btn btn-outline-secondary">Open in new tab</a>
-                </div>
-            </div>
+            </p>
         </div>
-
-        @if (!string.IsNullOrWhiteSpace(Model.Exam.Description))
+        @if (Model.CanManage)
         {
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="text-muted text-uppercase small mb-2">Notes</h6>
-                    <p class="mb-0" style="white-space: pre-wrap">@Model.Exam.Description</p>
-                </div>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a asp-action="Edit" asp-route-id="@Model.Exam.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a asp-action="Delete" asp-route-id="@Model.Exam.Id" class="btn btn-sm btn-outline-danger">Delete</a>
             </div>
         }
     </div>
 
-    <div class="col-md-5">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase small mb-2">Difficulty</h6>
+    <div class="row g-3">
+        <div class="col-md-7">
+            <div class="panel mb-3">
+                <div class="panel-label">The exam</div>
+                @if (isImage)
+                {
+                    <img src="@Model.Exam.FilePath" alt="Exam preview" class="img-fluid rounded mb-3" style="border:1px solid var(--line)"/>
+                }
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-action="Download" asp-route-id="@Model.Exam.Id" class="btn btn-primary btn-sm">Download</a>
+                    <a href="@Model.Exam.FilePath" target="_blank" class="btn btn-outline-secondary btn-sm">Open in new tab</a>
+                </div>
+                <div class="row-meta mt-2">@Model.Exam.OriginalFileName</div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Exam.Description))
+            {
+                <div class="panel">
+                    <div class="panel-label">Notes from the uploader</div>
+                    <p class="mb-0" style="white-space:pre-wrap;font-size:0.9rem">@Model.Exam.Description</p>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-5">
+            <div class="panel mb-3">
+                <div class="panel-label">Difficulty</div>
                 @if (Model.AverageDifficulty.HasValue)
                 {
-                    <p class="display-6 mb-0">@Model.AverageDifficulty.Value.ToString("0.0") <span class="fs-6 text-muted">/ 5</span></p>
-                    <p class="text-muted small">from @Model.RatingCount @(Model.RatingCount == 1 ? "rating" : "ratings")</p>
+                    <div class="stat-value" style="font-size:2.4rem">
+                        <span class="accent">@Model.AverageDifficulty.Value.ToString("0.0")</span><small>/ 5</small>
+                    </div>
+                    <div class="stat-sub">from @Model.RatingCount @(Model.RatingCount == 1 ? "rating" : "ratings")</div>
                 }
                 else
                 {
-                    <p class="text-muted mb-0">Not rated yet.</p>
+                    <p class="text-muted mb-0" style="font-size:0.88rem">Not rated yet.</p>
                 }
 
+                <hr/>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <hr/>
                     <form asp-action="Rate" method="post" class="d-flex align-items-center gap-2">
                         <input type="hidden" name="examId" value="@Model.Exam.Id"/>
-                        <label class="form-label mb-0 small">Your rating:</label>
+                        <label class="form-label mb-0">Your rating</label>
                         <select name="score" class="form-select form-select-sm" style="width:auto">
                             @for (var i = 1; i <= 5; i++)
                             {
-                                if (Model.UserRating == i)
-                                {
-                                    <option value="@i" selected>@i</option>
-                                }
-                                else
-                                {
-                                    <option value="@i">@i</option>
-                                }
+                                <option value="@i" selected="@(Model.UserRating == i)">@i</option>
                             }
                         </select>
                         <button type="submit" class="btn btn-sm btn-outline-primary">
@@ -91,24 +85,24 @@
                 }
                 else
                 {
-                    <hr/>
-                    <p class="small mb-0">
+                    <p class="mb-0" style="font-size:0.82rem">
                         <a asp-controller="Account" asp-action="Login"
                            asp-route-returnUrl="@Url.Action("Details", "Exams", new { id = Model.Exam.Id })">Log in</a>
-                        to rate this exam.
+                        <span class="text-muted">to rate this exam.</span>
                     </p>
                 }
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body small text-muted">
-                Uploaded by <strong>@Model.UploaderName</strong> on @Model.Exam.UploadedAt.ToString("d MMM yyyy")
+            <div class="panel">
+                <div class="row-meta">
+                    Uploaded by <span style="color:var(--paper)">@Model.UploaderName</span> · @Model.Exam.UploadedAt.ToString("d MMM yyyy")
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="mt-4">
-    <a asp-action="Index" class="btn btn-link px-0">&larr; Back to all exams</a>
+    <div class="mt-4">
+        <a asp-action="Index" style="font-size:0.82rem">← Back to the archive</a>
+    </div>
+
 </div>

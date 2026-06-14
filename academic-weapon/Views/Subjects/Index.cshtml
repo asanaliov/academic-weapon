@@ -1,48 +1,75 @@
+@using academic_weapon.Helpers
 @model List<academic_weapon.Models.Subject>
 @{
     ViewData["Title"] = "Subjects";
+    var query = ViewBag.Query as string;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Subjects</h2>
-    <a asp-action="Create" class="btn btn-primary btn-sm">+ Add Subject</a>
-</div>
+<div class="reveal">
 
-@if (!Model.Any())
-{
-    <div class="text-center py-5">
-        <p class="text-muted fs-5">No subjects yet.</p>
-        <a asp-action="Create" class="btn btn-primary">Add your first subject</a>
+    <div class="page-head d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div>
+            <div class="page-kicker">Your ledger</div>
+            <h1 class="page-title">Subjects</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Export" class="btn btn-outline-secondary btn-sm">Export CSV</a>
+            <a asp-action="Create" class="btn btn-primary btn-sm">+ Add subject</a>
+        </div>
     </div>
-}
-else
-{
-    @foreach (var semester in Model.GroupBy(s => s.Semester).OrderBy(g => g.Key))
+
+    <form method="get" class="mb-4" style="max-width:340px">
+        <input type="search" name="q" value="@query" class="form-control"
+               placeholder="Search subjects…" onsearch="this.form.submit()"/>
+    </form>
+
+    @if (!Model.Any())
     {
-        <div class="section-title mt-3">Semester @semester.Key</div>
-        @foreach (var s in semester)
+        <div class="empty">
+            <div class="empty-glyph">∅</div>
+            @if (string.IsNullOrWhiteSpace(query))
+            {
+                <p class="empty-text">No subjects yet. Add them by hand or import your FINKI courses in one go.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a asp-action="Create" class="btn btn-primary btn-sm">Add a subject</a>
+                    <a asp-controller="Import" asp-action="Index" class="btn btn-outline-secondary btn-sm">Import from FINKI</a>
+                </div>
+            }
+            else
+            {
+                <p class="empty-text">Nothing matches “@query”.</p>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear search</a>
+            }
+        </div>
+    }
+    else
+    {
+        @foreach (var semester in Model.GroupBy(s => s.Semester).OrderBy(g => g.Key))
         {
-            <div class="subject-row @(s.IsCompleted ? "completed" : "")">
-                <div>
-                    <div class="subject-name">
-                        @s.Name
-                        @if (s.HasLab) { <span class="badge bg-secondary ms-1">Lab</span> }
-                        @if (s.IsCompleted) { <span class="badge bg-success ms-1">Done</span> }
-                    </div>
-                    <div class="subject-meta">@s.Credits cr &middot; Semester @s.Semester &middot; Confidence @s.ConfidenceLevel/10</div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    @if (s.FinalGrade.HasValue)
-                    {
-                        <span style="font-family:'Playfair Display',serif;color:var(--accent);font-size:1.05rem;min-width:50px;text-align:right">
-                            @s.FinalGrade.Value.ToString("F1")%
-                        </span>
-                    }
-                    <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary">View</a>
-                    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@s.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                </div>
+            <div class="section-title">Semester @semester.Key</div>
+            <div class="ledger">
+                @foreach (var s in semester)
+                {
+                    <a asp-action="Details" asp-route-id="@s.Id" class="ledger-row @(s.IsCompleted ? "done" : "")">
+                        <div>
+                            <div class="row-title">
+                                @s.Name
+                                @if (s.HasLab) { <span class="tag ms-2">Lab</span> }
+                                @if (s.IsCompleted) { <span class="tag tag-sage ms-1">Done</span> }
+                            </div>
+                            <div class="row-meta">@s.Credits cr · confidence @s.ConfidenceLevel/10</div>
+                        </div>
+                        @if (s.FinalGrade.HasValue)
+                        {
+                            <div class="row-grade">
+                                @s.FinalGrade.Value.ToString("F1")%
+                                <small>grade @GradeHelper.ToFinkiGrade(s.FinalGrade.Value)</small>
+                            </div>
+                        }
+                    </a>
+                }
             </div>
         }
     }
-}
+
+</div>

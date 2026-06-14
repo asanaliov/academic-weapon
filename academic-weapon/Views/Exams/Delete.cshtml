@@ -3,16 +3,19 @@
     ViewData["Title"] = "Delete Exam";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-3">Delete this exam?</h2>
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">@Model.CourseName <span class="text-muted">(@Model.Year)</span></h5>
-                <p class="card-text mb-1">@Model.Professor — @Model.ExamType</p>
-                <p class="card-text text-muted small mb-0">File: @Model.OriginalFileName</p>
-            </div>
+<div class="row justify-content-center reveal">
+    <div class="col-md-6 col-lg-5">
+        <div class="page-head">
+            <div class="page-kicker" style="color:var(--clay)">Irreversible</div>
+            <h1 class="page-title">Delete this exam?</h1>
+            <p class="page-sub">The file and all of its ratings will be removed from the archive.</p>
         </div>
+
+        <div class="panel mb-4">
+            <div class="row-title mb-1">@Model.CourseName <span class="wisp">(@Model.Year)</span></div>
+            <div class="row-meta">@Model.Professor · @Model.ExamType · @Model.OriginalFileName</div>
+        </div>
+
         <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-danger">Delete permanently</button>
